@@ -1,2 +1,2 @@
 import useAxios from './useAxios';
-window.useAxios = useAxios;
+export default useAxios;
