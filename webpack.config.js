@@ -26,5 +26,11 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: 'test/index.html'
         })
-    ]  
+    ],
+    devServer: {
+        headers: { 
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"
+        }
+    }  
 }
