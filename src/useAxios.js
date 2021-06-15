@@ -2,20 +2,28 @@ import React from 'react';
 import {useState,  useEffect} from 'react';
 import axios from 'axios';
 
-const useAxios = (config) => {
-    const [data, setData] = useState();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState();
+const useAxios = (config, options) => {
+    const [output, setOutput] = useState({data: undefined, loading: false, error: undefined});
+
+    const refresh = (overwriteConfig) => {
+        setOutput({...output, loading: true});
+        return axios.request(config)
+                .then(data => setOutput({...output, data, loading: false}))
+                .catch(error => setOutput({...output, error, loading: false}))
+    }
 
     useEffect(() => {
-        setLoading(true);
-        axios.request(config)
-                .then(setData)
-                .catch(setError)
-                .finally(() => setLoading(false))
+        if (options.trigger) {
+            refresh();
+        }
+        // async function fetchData() {
+        //     const data = await axios(config);
+        //     setOutput({...output, data, loading: false});
+        // }
+        //  fetchData();
     }, [])
 
-    return [{data, loading, error}];
+    return [output, refresh];
 };
 
 export default useAxios;
