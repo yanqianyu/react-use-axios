@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-import useAxios from '../src';
 import Test from '../test/Test';
 import AxiosConfig from '../src/AxiosConfig';
 
