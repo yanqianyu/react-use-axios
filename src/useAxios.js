@@ -1,7 +1,8 @@
 import React from 'react';
-import {useState,  useEffect, useContext, useRef} from 'react';
+import {useState,  useEffect, useContext, useRef, useReducer} from 'react';
 import axios from 'axios';
 import { AxiosContext } from './AxiosConfig';
+import { initResps, actions, responseReducer } from './reducers';
 
 const useAxios = (config, options) => {
     const globalConfig = useContext(AxiosContext) || {};
@@ -9,19 +10,23 @@ const useAxios = (config, options) => {
     const cancelSource = useRef();
 
     const axiosInstance = globalConfig.axiosInstance || axios.create();
-
-    const [output, setOutput] = useState({data: undefined, loading: false, error: undefined, isCancel: false});
-
+    const [output, dispatch] = useReducer(responseReducer, initResps);
+    
     const refresh = (overwriteConfig) => {
         if (cancelSource.current) {
             cancelSource.current.cancel();
-            setOutput({...output, isCancel: true});
+            dispatch({type: actions.init});
         }
         cancelSource.current = cancelable ? axios.CancelToken.source() : undefined;
-        setOutput({...output, loading: true});
+        dispatch({type: actions.init});
+
         return axiosInstance.request({...config, overwriteConfig, CancelToken: (cancelSource.current || {}).token})
-                .then(data => setOutput({...output, data, loading: false}))
-                .catch(error => setOutput({...output, error, loading: false}))
+                .then(data => {
+                    dispatch({type: actions.success, payload: data});
+                })
+                .catch(error => {
+                    dispatch({type: actions.fail, payload: error});
+                })
     }
 
     useEffect(() => {
