@@ -1,20 +1,35 @@
 // localStorage的封装类
-const localStorage = typeof window === 'undefined' ? null : window.localStorage;
+// const localStorage = typeof window === 'undefined' ? null : window.localStorage;
 export default class Cache {
+    constructor() {
+        this.storage = new Map();
+    }
+    
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new Cache();
+        }
+        return this.instance;
+    }
+    
     static getItem(uuid) {
-        return localStorage.getItem(uuid) || null;
+        return this.getInstance().storage.get(uuid) || null;
     }
 
     static removeItem(uuid) {
-        localStorage.removeItem(uuid);
+        this.getInstance().storage.delete(uuid);
     }
 
     static setItem(uuid, etag, value) {
-        localStorage.setItem(uuid, {etag, value});
+        this.getInstance().storage.set(uuid, {etag, value});
     }
 
     static getAllKeys() {
-        return new Array(localStorage.length).fill('').map((_, index) => localStorage.key(index) || '');
+        return new Array(this.getInstance().storage.length).fill('').map((_, index) => this.getInstance().storage.key(index) || '');
+    }
+
+    static reset() {
+        this.getInstance().storage.clear();
     }
 }
 
@@ -51,7 +66,7 @@ function requestIntercepter(config) {
 // response拦截
 function responseInterceptor(response) {
     if (isCacheableMethod(response.config)) {
-        // todo 无法获取response全部的headers
+        // 无法获取response全部的headers 需要后台设置
         const responseEtag = response.headers['etag'];
         if (responseEtag) {
             Cache.setItem(getUUIDByAxiosConfig(response.config), responseEtag, response.data);
